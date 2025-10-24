@@ -448,3 +448,73 @@ body {
         font-size: 2.5rem;
     }
 }
+
+/* 天气背景样式 */
+body.clear-sky-day {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+body.clear-sky-night {
+    background: #0a0e3c;
+    position: relative;
+    overflow: visible;
+}
+
+body.rainy {
+    background: linear-gradient(135deg, #6b737e 0%, #4a5568 100%);
+}
+
+body.snowy {
+    background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+}
+
+body.cloudy {
+    background: linear-gradient(135deg, #a8c0ff 0%, #3f2b96 100%);
+}
+
+body.foggy {
+    background: linear-gradient(135deg, #b8c6db 0%, #f5f7fa 100%);
+}
+
+body.windy {
+    background: linear-gradient(135deg, #8EC5FC 0%, #E0C3FC 100%);
+}
+
+/* 夜晚星空效果 */
+.star {
+    position: absolute;
+    background-color: white;
+    border-radius: 50%;
+    animation: twinkle 2s infinite alternate;
+}
+
+@keyframes twinkle {
+    0% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.moon {
+    position: absolute;
+    top: 10%;
+    right: 15%;
+    width: 80px;
+    height: 80px;
+    background: #f0e68c;
+    border-radius: 50%;
+    box-shadow: 0 0 40px #f0e68c;
+}
+
+/* 流星动画 */
+.meteor {
+    position: absolute;
+    width: 1px;
+    height: 100px;
+    background: linear-gradient(to bottom, transparent, white);
+    animation: meteor 1s linear;
+}
+
+@keyframes meteor {
+    0% { transform: translate(0, 0) rotate(45deg); opacity: 1; }
+    100% { transform: translate(-100px, 100px) rotate(45deg); opacity: 0; }
+}
+

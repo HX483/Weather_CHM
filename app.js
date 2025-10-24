@@ -1,5 +1,5 @@
 // 创建 Vue 应用
-const { createApp, ref, computed, onMounted } = Vue;
+const { createApp, ref, computed, onMounted, watch } = Vue;
 
 const app = createApp({
     setup() {
@@ -381,7 +381,103 @@ const app = createApp({
             // 添加全局键盘事件监听
             document.addEventListener('keydown', handleKeydown);
         });
+
+        // 计算当前时间是否为夜晚（19:00-6:00）
+const isNight = computed(() => {
+    const hour = new Date().getHours();
+    return hour >= 19 || hour < 6;
+});
+
+// 根据天气状况和时间获取背景类名
+const backgroundClass = computed(() => {
+    if (!showWeather.value) return '';
+    
+    const condition = weatherData.value.condition.toLowerCase();
+    const isNightTime = isNight.value;
+    
+    if (condition.includes('晴')) {
+        return isNightTime ? 'clear-sky-night' : 'clear-sky-day';
+    } else if (condition.includes('雨')) {
+        return 'rainy';
+    } else if (condition.includes('雪')) {
+        return 'snowy';
+    } else if (condition.includes('云')) {
+        return 'cloudy';
+    } else if (condition.includes('雾')) {
+        return 'foggy';
+    } else if (condition.includes('风')) {
+        return 'windy';
+    }
+    
+    return isNightTime ? 'clear-sky-night' : 'clear-sky-day';
+});
+
+// 创建星空效果（仅在夜晚晴空时）
+const createStarfield = () => {
+    // 清除已有的星空元素
+    document.querySelectorAll('.star, .moon, .meteor').forEach(el => el.remove());
+    
+    if (backgroundClass.value !== 'clear-sky-night') return;
+    
+    const body = document.body;
+    
+    // 创建月亮
+    const moon = document.createElement('div');
+    moon.className = 'moon';
+    body.appendChild(moon);
+    
+    // 创建星星
+    const starCount = 100;
+    for (let i = 0; i < starCount; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        star.style.left = `${Math.random() * 100}vw`;
+        star.style.top = `${Math.random() * 100}vh`;
+        star.style.width = `${Math.random() * 2 + 1}px`;
+        star.style.height = star.style.width;
+        star.style.animationDelay = `${Math.random() * 2}s`;
+        body.appendChild(star);
+    }
+    
+    // 定时创建流星
+    const createMeteor = () => {
+        if (backgroundClass.value !== 'clear-sky-night') return;
         
+        const meteor = document.createElement('div');
+        meteor.className = 'meteor';
+        meteor.style.left = `${Math.random() * 100}vw`;
+        meteor.style.top = `${Math.random() * 30}vh`;
+        body.appendChild(meteor);
+        
+        // 流星消失后移除元素
+        setTimeout(() => {
+            meteor.remove();
+        }, 1000);
+    };
+    
+    // 随机时间创建流星
+    setInterval(createMeteor, 5000 + Math.random() * 15000);
+};
+
+
+        
+        // 监听背景类变化，更新星空效果
+        watch(backgroundClass, (newClass) => {
+            // 移除所有背景类
+            document.body.className = document.body.className
+                .split(' ')
+                .filter(cls => !['clear-sky-day', 'clear-sky-night', 'rainy', 'snowy', 'cloudy', 'foggy', 'windy'].includes(cls))
+                .join(' ');
+            
+            // 添加新的背景类
+            if (newClass) {
+                document.body.classList.add(newClass);
+            }
+            
+            // 创建星空（如果需要）
+            createStarfield();
+        });
+
         // 暴露给模板的数据和方法
         return {
             cityInput,
@@ -395,7 +491,8 @@ const app = createApp({
             weatherIcon,
             getForecastIcon,
             handleSearch,
-            clearError
+            clearError,
+            backgroundClass
         };
     }
 });
