@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>天气查询应用</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="shortcut icon" type="image/svg+xml" href="favicon.svg">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <header class="app-header">
+                <h1>天气预报</h1>
+            </header>
+            
+            <main class="app-main">
+                <section class="search-section">
+                    <div class="search-container">
+                        <input 
+                            type="text" 
+                            v-model="cityInput" 
+                            placeholder="请输入城市名称"
+                            class="city-input"
+                            @keyup.enter="handleSearch"
+                            @focus="clearError"
+                        >
+                        <button 
+                            class="search-btn"
+                            @click="handleSearch"
+                        >
+                            查询天气
+                        </button>
+                    </div>
+                </section>
+                
+                <section v-if="showWeather" class="weather-section">
+                    <div class="weather-header">
+                        <h2 class="city-name">{{ weatherData.city }}</h2>
+                        <div class="weather-icon">{{ weatherIcon }}</div>
+                    </div>
+                    
+                    <div class="weather-main">
+                        <div class="temperature">
+                            <span class="temp-value">{{ weatherData.temperature }}</span>
+                            <span class="temp-unit">°C</span>
+                        </div>
+                        <div class="weather-condition">{{ weatherData.condition }}</div>
+                    </div>
+                    
+                    <div class="weather-details">
+                        <div class="detail-item">
+                            <span class="detail-label">风力风向</span>
+                            <span class="detail-value">{{ weatherData.wind }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">湿度</span>
+                            <span class="detail-value">{{ weatherData.humidity }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">气压</span>
+                            <span class="detail-value">{{ weatherData.pressure }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">更新时间</span>
+                            <span class="detail-value">{{ weatherData.updateTime }}</span>
+                        </div>
+                    </div>
+                </section>
+                
+                <section v-if="loading" class="loading-section">
+                    <div class="loading-spinner"></div>
+                    <p>正在查询天气信息...</p>
+                </section>
+                
+                <section v-if="showError" class="error-section">
+                    <p class="error-message">{{ errorMessage }}</p>
+                </section>
+            </main>
+        </div>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
