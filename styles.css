@@ -14,6 +14,14 @@ body {
     background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
     min-height: 100vh;
     color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 2rem;
+}
+
+* {
+    text-align: center;
 }
 
 /* 容器样式 */
@@ -24,6 +32,7 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    align-items: center;
 }
 
 /* 头部样式 */
@@ -138,6 +147,10 @@ body {
 .weather-main {
     text-align: center;
     margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
 }
 
 .temperature {
@@ -162,6 +175,8 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 20px;
+    justify-items: center;
+    width: 100%;
 }
 
 .detail-item {
@@ -191,6 +206,82 @@ body {
     font-size: 1.2rem;
     font-weight: 600;
     color: #333;
+}
+
+/* 未来天气预报样式 */
+.forecast-section {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+}
+
+.forecast-title {
+    color: white;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.forecast-container {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.forecast-item {
+    flex: 0 0 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.forecast-item:hover {
+    transform: translateY(-3px);
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.forecast-date {
+    color: white;
+    font-size: 0.9rem;
+    margin-bottom: 0.8rem;
+    text-align: center;
+}
+
+.forecast-icon {
+    font-size: 2rem;
+    margin-bottom: 0.8rem;
+}
+
+.forecast-temp {
+    display: flex;
+    gap: 0.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.temp-min {
+    color: #3d914d;
+    font-weight: bold;
+}
+.temp-max {
+    color: #e64646fd;
+    font-weight: bold;
+}
+
+
+.forecast-condition {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.85rem;
+    text-align: center;
 }
 
 /* 加载状态样式 */

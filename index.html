@@ -70,6 +70,22 @@
                     </div>
                 </section>
                 
+                <!-- 未来天气预报区域 -->
+                <section v-if="showWeather && forecastData.length > 0" class="forecast-section">
+                    <h3 class="forecast-title">未来天气预报</h3>
+                    <div class="forecast-container">
+                        <div v-for="(day, index) in forecastData" :key="index" class="forecast-item">
+                            <div class="forecast-date" v-html="day.date"></div>
+                            <div class="forecast-icon">{{ getForecastIcon(day.condition) }}</div>
+                            <div class="forecast-temp">
+                                <span class="temp-min">{{ day.minTemp }}°</span>
+                                <span class="temp-max">{{ day.maxTemp }}°</span>
+                            </div>
+                            <div class="forecast-condition">{{ day.condition }}</div>
+                        </div>
+                    </div>
+                </section>
+                
                 <section v-if="loading" class="loading-section">
                     <div class="loading-spinner"></div>
                     <p>正在查询天气信息...</p>

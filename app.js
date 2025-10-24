@@ -17,6 +17,7 @@ const app = createApp({
             pressure: '--',
             updateTime: '--'
         });
+        const forecastData = ref([]); // 存储未来天气预报数据
         
         // 计算属性
         const showWeather = computed(() => {
@@ -41,6 +42,26 @@ const app = createApp({
                 return '🌤️';
             }
         });
+        
+        // 获取天气预报图标
+        const getForecastIcon = (condition) => {
+            condition = condition.toLowerCase();
+            if (condition.includes('晴')) {
+                return '☀️';
+            } else if (condition.includes('云')) {
+                return '☁️';
+            } else if (condition.includes('雨')) {
+                return '🌧️';
+            } else if (condition.includes('雪')) {
+                return '❄️';
+            } else if (condition.includes('雾')) {
+                return '🌫️';
+            } else if (condition.includes('风')) {
+                return '💨';
+            } else {
+                return '🌤️';
+            }
+        };
         
         // 方法
         const getWindDirection = (degrees) => {
@@ -85,6 +106,17 @@ const app = createApp({
                 
                 const weatherDataRaw = await weatherResponse.json();
                 
+                // 步骤3：获取未来天气预报数据（5天/3小时预报）
+                console.log('调用天气预报API获取未来天气信息...');
+                const forecastApiUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric&lang=zh_cn`;
+                const forecastResponse = await fetch(forecastApiUrl);
+                
+                if (!forecastResponse.ok) {
+                    throw new Error(`天气预报API请求失败，状态码: ${forecastResponse.status}`);
+                }
+                
+                const forecastDataRaw = await forecastResponse.json();
+                
                 // 转换OpenWeatherMap的数据格式为我们应用需要的格式
                 const weatherInfo = {
                     city: weatherDataRaw.name,
@@ -96,10 +128,91 @@ const app = createApp({
                     updateTime: new Date().toLocaleString('zh-CN')
                 };
                 
-                return weatherInfo;
+                // 格式化未来天气预报数据
+                const formattedForecastData = formatForecastData(forecastDataRaw.list);
+                
+                return { weatherData: weatherInfo, forecastData: formattedForecastData };
             } catch (error) {
                 throw error;
             }
+        };
+        
+        // 格式化未来天气预报数据
+        const formatForecastData = (forecastList) => {
+            // 按日期分组
+            const dailyData = {};
+            
+            // 获取未来5天的日期
+            const today = new Date();
+            const nextDays = [];
+            
+            for (let i = 1; i <= 5; i++) {
+                const date = new Date(today);
+                date.setDate(today.getDate() + i);
+                const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD格式
+                nextDays.push(dateStr);
+            }
+            
+            // 初始化每天的数据
+            nextDays.forEach(date => {
+                dailyData[date] = {
+                    temps: [],
+                    conditions: []
+                };
+            });
+            
+            // 处理每个预报项
+            forecastList.forEach(item => {
+                const dateStr = item.dt_txt.split(' ')[0];
+                if (nextDays.includes(dateStr)) {
+                    dailyData[dateStr].temps.push(item.main.temp);
+                    dailyData[dateStr].conditions.push(item.weather[0].description);
+                }
+            });
+            
+            // 计算每天的最高最低温度和主要天气状况
+            const result = [];
+            
+            nextDays.forEach(dateStr => {
+                const dayData = dailyData[dateStr];
+                if (dayData.temps.length > 0) {
+                    const maxTemp = Math.round(Math.max(...dayData.temps));
+                    const minTemp = Math.round(Math.min(...dayData.temps));
+                    
+                    // 统计最常见的天气状况
+                    const conditionCount = {};
+                    dayData.conditions.forEach(cond => {
+                        conditionCount[cond] = (conditionCount[cond] || 0) + 1;
+                    });
+                    
+                    let mainCondition = dayData.conditions[0];
+                    let maxCount = 0;
+                    
+                    Object.entries(conditionCount).forEach(([cond, count]) => {
+                        if (count > maxCount) {
+                            maxCount = count;
+                            mainCondition = cond;
+                        }
+                    });
+                    
+                    // 格式化日期显示
+          const date = new Date(dateStr);
+          const dateOptions = { month: 'short', day: 'numeric' };
+          const weekdayOptions = { weekday: 'short' };
+          const datePart = date.toLocaleDateString('zh-CN', dateOptions);
+          const weekdayPart = date.toLocaleDateString('zh-CN', weekdayOptions);
+          const formattedDate = `${datePart}<br>${weekdayPart}`;
+                    
+                    result.push({
+                        date: formattedDate,
+                        maxTemp,
+                        minTemp,
+                        condition: mainCondition
+                    });
+                }
+            });
+            
+            return result;
         };
         
         const handleSearch = async () => {
@@ -118,16 +231,18 @@ const app = createApp({
             
             try {
                 // 获取天气数据
-                const data = await fetchWeatherData(city);
+                const { weatherData: data, forecastData: forecast } = await fetchWeatherData(city);
                 
                 // 使用用户输入的城市名称替换API返回的城市名
                 data.city = city;
                 
                 // 更新响应式数据
                 weatherData.value = data;
+                forecastData.value = forecast;
             } catch (error) {
                 showError.value = true;
                 errorMessage.value = error.message || '获取天气信息失败，请稍后重试';
+                forecastData.value = []; // 清空天气预报数据
             } finally {
                 // 隐藏加载状态
                 loading.value = false;
@@ -165,8 +280,10 @@ const app = createApp({
             showError,
             errorMessage,
             weatherData,
+            forecastData,
             showWeather,
             weatherIcon,
+            getForecastIcon,
             handleSearch,
             clearError
         };
