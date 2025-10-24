@@ -78,7 +78,7 @@ const app = createApp({
                 
                 // 步骤1：使用地理编码API获取城市的经纬度
                 console.log('调用地理编码API获取经纬度...');
-                const geoApiUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(city)}&limit=2&appid=${apiKey}`;
+                const geoApiUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(city)}&limit=2&appid=${apiKey}&lang=zh_cn`;
                 const geoResponse = await fetch(geoApiUrl);
                 
                 if (!geoResponse.ok) {
@@ -119,8 +119,9 @@ const app = createApp({
                 const forecastDataRaw = await forecastResponse.json();
                 
                 // 转换OpenWeatherMap的数据格式为我们应用需要的格式
+                // 使用从地理编码API获取的城市名称（已经是中文）
                 const weatherInfo = {
-                    city: weatherDataRaw.name,
+                    city: name, // 使用geoData中获取的城市名（已经包含中文名称）
                     temperature: Math.round(weatherDataRaw.main.temp),
                     condition: weatherDataRaw.weather[0].description,
                     wind: `${getWindDirection(weatherDataRaw.wind.deg)} ${weatherDataRaw.wind.speed} m/s`,
@@ -370,17 +371,7 @@ const app = createApp({
             }
         };
         
-        // 生命周期钩子
-        onMounted(() => {
-            // 自动聚焦到输入框
-            const input = document.querySelector('.city-input');
-            if (input) {
-                input.focus();
-            }
-            
-            // 添加全局键盘事件监听
-            document.addEventListener('keydown', handleKeydown);
-        });
+        // 生命周期钩子 - 第一个定义将被覆盖，已在文件底部合并
 
         // 计算当前时间是否为夜晚（19:00-6:00）
 const isNight = computed(() => {
@@ -412,10 +403,14 @@ const backgroundClass = computed(() => {
     return isNightTime ? 'clear-sky-night' : 'clear-sky-day';
 });
 
+// 清除所有天气特效元素
+const clearWeatherEffects = () => {
+    document.querySelectorAll('.star, .moon, .meteor, .cloud').forEach(el => el.remove());
+};
+
 // 创建星空效果（仅在夜晚晴空时）
 const createStarfield = () => {
-    // 清除已有的星空元素
-    document.querySelectorAll('.star, .moon, .meteor').forEach(el => el.remove());
+    clearWeatherEffects();
     
     if (backgroundClass.value !== 'clear-sky-night') return;
     
@@ -461,7 +456,7 @@ const createStarfield = () => {
 
 
         
-        // 监听背景类变化，更新星空效果
+        // 监听背景类变化，更新天气效果
         watch(backgroundClass, (newClass) => {
             // 移除所有背景类
             document.body.className = document.body.className
@@ -474,9 +469,156 @@ const createStarfield = () => {
                 document.body.classList.add(newClass);
             }
             
-            // 创建星空（如果需要）
-            createStarfield();
+            // 清除所有天气特效
+            clearWeatherEffects();
+            
+            // 创建对应的天气效果
+            if (newClass === 'clear-sky-night') {
+                createStarfield();
+            } else if (newClass === 'cloudy') {
+                // 创建4朵自然形状的云朵
+                createCloud('cloud-1');
+                createCloud('cloud-2');
+                createCloud('cloud-3');
+                createCloud('cloud-4');
+            }
         });
+
+        // 获取用户当前位置并查询天气
+const getUserLocationAndWeather = async () => {
+    if (!navigator.geolocation) {
+        console.log('浏览器不支持地理定位');
+        return;
+    }
+
+    loading.value = true;
+    showError.value = false;
+
+    try {
+        console.log('请求用户位置...');
+        // 使用Geolocation API获取用户位置
+        const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0
+            });
+        });
+
+        const { latitude: lat, longitude: lon } = position.coords;
+        console.log(`获取到用户位置: 纬度 ${lat}, 经度 ${lon}`);
+
+        // 直接使用经纬度获取天气数据
+        const { weatherData: data, forecastData: forecast } = await fetchWeatherByCoordinates(lat, lon);
+        
+        // 更新响应式数据
+        weatherData.value = data;
+        forecastData.value = forecast;
+        lifeAdvice.value = generateLifeAdvice(data);
+    } catch (error) {
+        console.error('获取位置失败:', error);
+        // 不显示错误信息，避免影响用户体验，用户仍然可以手动输入城市查询
+        // showError.value = true;
+        // errorMessage.value = '无法获取您的位置，请手动输入城市查询';
+    } finally {
+        loading.value = false;
+    }
+};
+
+// 新增：通过经纬度获取天气数据的函数
+const fetchWeatherByCoordinates = async (lat, lon) => {
+    try {
+        const apiKey = 'eca60abfae14de41b8c48955b5503743';
+        console.log(`使用经纬度查询天气: ${lat}, ${lon}`);
+        
+            // 关键新增：通过经纬度调用反向地理编码，获取中文城市名
+        console.log('调用反向地理编码API获取中文城市名...');
+        const reverseGeoUrl = `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${apiKey}&lang=zh_cn`;
+        const reverseGeoResponse = await fetch(reverseGeoUrl);
+        
+        if (!reverseGeoResponse.ok) {
+            throw new Error(`反向地理编码请求失败，状态码: ${reverseGeoResponse.status}`);
+        }
+        
+        const reverseGeoData = await reverseGeoResponse.json();
+        let chineseCityName = '';
+        if (reverseGeoData && reverseGeoData.length > 0) {
+            chineseCityName = reverseGeoData[0].name; // 提取中文城市名
+        }
+
+        // 步骤1：使用当前天气API获取天气数据
+        console.log('调用当前天气API获取天气信息...');
+        const weatherApiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric&lang=zh_cn`;
+        const weatherResponse = await fetch(weatherApiUrl);
+        
+        if (!weatherResponse.ok) {
+            throw new Error(`天气API请求失败，状态码: ${weatherResponse.status}`);
+        }
+        
+        const weatherDataRaw = await weatherResponse.json();
+        
+        // 步骤2：获取未来天气预报数据
+        console.log('调用天气预报API获取未来天气信息...');
+        const forecastApiUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric&lang=zh_cn`;
+        const forecastResponse = await fetch(forecastApiUrl);
+        
+        if (!forecastResponse.ok) {
+            throw new Error(`天气预报API请求失败，状态码: ${forecastResponse.status}`);
+        }
+        
+        const forecastDataRaw = await forecastResponse.json();
+        
+        // 转换数据格式
+        const weatherInfo = {
+            city: chineseCityName ||weatherDataRaw.name,
+            temperature: Math.round(weatherDataRaw.main.temp),
+            condition: weatherDataRaw.weather[0].description,
+            wind: `${getWindDirection(weatherDataRaw.wind.deg)} ${weatherDataRaw.wind.speed} m/s`,
+            humidity: `${weatherDataRaw.main.humidity}%`,
+            pressure: `${weatherDataRaw.main.pressure} hPa`,
+            updateTime: new Date().toLocaleString('zh-CN')
+        };
+        
+        // 格式化未来天气预报数据
+        const formattedForecastData = formatForecastData(forecastDataRaw.list);
+        
+        return { weatherData: weatherInfo, forecastData: formattedForecastData };
+    } catch (error) {
+        throw error;
+    }
+};
+
+// 创建云朵函数
+const createCloud = (cloudClass) => {
+    // 创建云朵容器
+    const cloudContainer = document.createElement('div');
+    cloudContainer.className = `cloud ${cloudClass}`;
+    
+    // 创建基础椭圆部分
+    const cloudBase = document.createElement('div');
+    cloudBase.className = `${cloudClass}-base`;
+    
+    // 创建云朵主体（已经通过CSS伪元素实现云朵的圆形部分）
+    cloudContainer.appendChild(cloudBase);
+    
+    // 添加到body
+    document.body.appendChild(cloudContainer);
+};
+
+// 在onMounted钩子中调用获取位置的函数
+onMounted(() => {
+    // 自动聚焦到输入框
+    const input = document.querySelector('.city-input');
+    if (input) {
+        input.focus();
+    }
+    
+    // 添加全局键盘事件监听
+    document.addEventListener('keydown', handleKeydown);
+    
+    // 新增：获取用户位置并查询天气
+    getUserLocationAndWeather();
+});
 
         // 暴露给模板的数据和方法
         return {

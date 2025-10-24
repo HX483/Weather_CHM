@@ -457,7 +457,7 @@ body.clear-sky-day {
 body.clear-sky-night {
     background: #0a0e3c;
     position: relative;
-    overflow: visible;
+    overflow: hidden;
 }
 
 body.rainy {
@@ -469,7 +469,185 @@ body.snowy {
 }
 
 body.cloudy {
-    background: linear-gradient(135deg, #a8c0ff 0%, #3f2b96 100%);
+    background: linear-gradient(to bottom, #d0d5dd 0%, #a1a1aa 50%, #71717a 100%);
+    overflow: hidden;
+}
+
+/* 基础云朵容器 */
+.cloud {
+    position: absolute;
+    z-index: 1;
+    opacity: 0.6; /* 降低透明度 */
+}
+
+/* 云的基本形状 - 基于☁️样式 */
+.cloud-1 {
+    width: 350px;
+    height: 150px;
+    top: 8%;
+    left: -150px;
+    animation: floatClouds 40s linear infinite;
+}
+
+.cloud-1::before,
+.cloud-1::after,
+.cloud-1 > div {
+    content: '';
+    position: absolute;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+}
+
+.cloud-1 > div {
+    width: 250px;
+    height: 120px;
+    top: 60px;
+    left: 50px;
+    border-radius: 60px;
+}
+
+.cloud-1::before {
+    width: 120px;
+    height: 120px;
+    top: 20px;
+    left: 50px;
+}
+
+.cloud-1::after {
+    width: 150px;
+    height: 150px;
+    top: 0;
+    left: 120px;
+}
+
+/* 第二朵云 */
+.cloud-2 {
+    width: 280px;
+    height: 120px;
+    top: 20%;
+    left: -120px;
+    animation: floatClouds 45s linear infinite 5s;
+}
+
+.cloud-2::before,
+.cloud-2::after,
+.cloud-2 > div {
+    content: '';
+    position: absolute;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+}
+
+.cloud-2 > div {
+    width: 200px;
+    height: 90px;
+    top: 50px;
+    left: 40px;
+    border-radius: 50px;
+}
+
+.cloud-2::before {
+    width: 100px;
+    height: 100px;
+    top: 15px;
+    left: 40px;
+}
+
+.cloud-2::after {
+    width: 120px;
+    height: 120px;
+    top: 0;
+    left: 90px;
+}
+
+/* 第三朵云 */
+.cloud-3 {
+    width: 320px;
+    height: 140px;
+    top: 5%;
+    left: -150px;
+    animation: floatClouds 50s linear infinite 2s;
+}
+
+.cloud-3::before,
+.cloud-3::after,
+.cloud-3 > div {
+    content: '';
+    position: absolute;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+}
+
+.cloud-3 > div {
+    width: 230px;
+    height: 110px;
+    top: 60px;
+    left: 45px;
+    border-radius: 60px;
+}
+
+.cloud-3::before {
+    width: 110px;
+    height: 110px;
+    top: 20px;
+    left: 45px;
+}
+
+.cloud-3::after {
+    width: 140px;
+    height: 140px;
+    top: 0;
+    left: 110px;
+}
+
+/* 第四朵云 */
+.cloud-4 {
+    width: 300px;
+    height: 130px;
+    top: 25%;
+    left: -130px;
+    animation: floatClouds 48s linear infinite 8s;
+}
+
+.cloud-4::before,
+.cloud-4::after,
+.cloud-4 > div {
+    content: '';
+    position: absolute;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+}
+
+.cloud-4 > div {
+    width: 220px;
+    height: 100px;
+    top: 55px;
+    left: 40px;
+    border-radius: 55px;
+}
+
+.cloud-4::before {
+    width: 105px;
+    height: 105px;
+    top: 18px;
+    left: 40px;
+}
+
+.cloud-4::after {
+    width: 130px;
+    height: 130px;
+    top: 0;
+    left: 100px;
+}
+
+/* 浮动动画 - 从左到右移动 */
+@keyframes floatClouds {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(calc(100vw + 400px));
+    }
 }
 
 body.foggy {
