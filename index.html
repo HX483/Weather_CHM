@@ -86,6 +86,20 @@
                     </div>
                 </section>
                 
+                <!-- 生活建议区域 -->
+                <section v-if="showWeather && lifeAdvice.length > 0" class="advice-section">
+                    <h3 class="advice-title">生活建议</h3>
+                    <div class="advice-container">
+                        <div v-for="(advice, index) in lifeAdvice" :key="index" class="advice-item">
+                            <div class="advice-icon">{{ advice.icon }}</div>
+                            <div class="advice-content">
+                                <h4 class="advice-type">{{ advice.type }}</h4>
+                                <p class="advice-text">{{ advice.text }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
                 <section v-if="loading" class="loading-section">
                     <div class="loading-spinner"></div>
                     <p>正在查询天气信息...</p>

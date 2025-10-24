@@ -18,6 +18,7 @@ const app = createApp({
             updateTime: '--'
         });
         const forecastData = ref([]); // 存储未来天气预报数据
+        const lifeAdvice = ref([]); // 存储生活建议数据
         
         // 计算属性
         const showWeather = computed(() => {
@@ -239,14 +240,122 @@ const app = createApp({
                 // 更新响应式数据
                 weatherData.value = data;
                 forecastData.value = forecast;
+                
+                // 生成生活建议
+                lifeAdvice.value = generateLifeAdvice(data);
             } catch (error) {
                 showError.value = true;
                 errorMessage.value = error.message || '获取天气信息失败，请稍后重试';
                 forecastData.value = []; // 清空天气预报数据
+                lifeAdvice.value = []; // 清空生活建议数据
             } finally {
                 // 隐藏加载状态
                 loading.value = false;
             }
+        };
+        
+        // 生成生活建议
+        function generateLifeAdvice(weatherData) {
+            const advice = [];
+            const temp = weatherData.temperature;
+            const humidity = parseInt(weatherData.humidity);
+            const condition = weatherData.condition.toLowerCase();
+            const hasWind = weatherData.wind && weatherData.wind.includes('m/s');
+            const windSpeed = hasWind ? parseFloat(weatherData.wind.split(' ')[1]) : 0;
+            
+            // 穿衣建议
+            let clothingAdvice = '';
+            if (temp >= 30) {
+                clothingAdvice = '天气炎热，建议穿短袖、短裤、薄长裙等清凉透气的衣物，注意防晒。';
+            } else if (temp >= 25) {
+                clothingAdvice = '天气温暖，建议穿短袖、薄长裤、薄外套等，早晚温差较大可适当增减衣物。';
+            } else if (temp >= 20) {
+                clothingAdvice = '天气舒适，建议穿长袖衬衫、薄外套、休闲装等，适合外出活动。';
+            } else if (temp >= 15) {
+                clothingAdvice = '天气转凉，建议穿长袖衬衫、毛衣、夹克等保暖衣物，注意保暖。';
+            } else if (temp >= 10) {
+                clothingAdvice = '天气较冷，建议穿毛衣、外套、风衣等厚实衣物，早晚注意增添衣物。';
+            } else if (temp >= 5) {
+                clothingAdvice = '天气寒冷，建议穿棉衣、羽绒服、厚毛衣等保暖衣物，戴帽子手套防寒。';
+            } else {
+                clothingAdvice = '天气严寒，建议穿厚羽绒服、厚棉衣等保暖性能好的衣物，注意防寒保暖。';
+            }
+            
+            advice.push({
+                type: '穿衣建议',
+                icon: '👔',
+                text: clothingAdvice
+            });
+            
+            // 出行建议
+            let travelAdvice = '';
+            if (condition.includes('雨')) {
+                travelAdvice = '有雨，建议携带雨具出行，道路可能湿滑，注意安全驾驶。';
+            } else if (condition.includes('雪')) {
+                travelAdvice = '有雪，道路可能结冰，出行请小心驾驶，注意交通安全。';
+            } else if (condition.includes('雾') || condition.includes('霾')) {
+                travelAdvice = '能见度较低，建议减少不必要的外出，驾车时开启雾灯，保持安全距离。';
+            } else if (windSpeed > 5) {
+                travelAdvice = '风力较大，出行时注意防风，高空作业需谨慎，避免在广告牌等高空物体下停留。';
+            } else if (temp > 35 || temp < 0) {
+                travelAdvice = '温度极端，建议减少长时间户外活动，注意防暑或防寒。';
+            } else {
+                travelAdvice = '天气条件良好，适合外出活动，注意做好防晒措施。';
+            }
+            
+            advice.push({
+                type: '出行建议',
+                icon: '🚗',
+                text: travelAdvice
+            });
+            
+            // 运动建议
+            let sportAdvice = '';
+            if (condition.includes('雨') || condition.includes('雪')) {
+                sportAdvice = '不适合户外运动，建议选择室内运动，如瑜伽、健身等。';
+            } else if (condition.includes('雾') || condition.includes('霾')) {
+                sportAdvice = '空气质量不佳，建议减少户外运动，可选择室内运动。';
+            } else if (temp > 35) {
+                sportAdvice = '温度过高，避免在中午高温时段进行户外运动，注意补充水分，防止中暑。';
+            } else if (temp < 5) {
+                sportAdvice = '温度较低，运动前应充分热身，穿着保暖透气的运动服装，运动后及时更换衣物。';
+            } else if (humidity > 80) {
+                sportAdvice = '湿度较大，运动时注意补充水分，避免剧烈运动导致身体不适。';
+            } else if (windSpeed > 8) {
+                sportAdvice = '风力较大，不适合户外运动，尤其是球类运动。';
+            } else {
+                sportAdvice = '天气条件适宜运动，可以进行各种户外运动，如跑步、骑行、球类运动等。';
+            }
+            
+            advice.push({
+                type: '运动建议',
+                icon: '🏃',
+                text: sportAdvice
+            });
+            
+            // 健康建议
+            let healthAdvice = '';
+            if (condition.includes('雨') || condition.includes('雪')) {
+                healthAdvice = '天气多变，注意保暖，预防感冒，保持室内空气流通。';
+            } else if (condition.includes('雾') || condition.includes('霾')) {
+                healthAdvice = '空气质量较差，外出时建议佩戴口罩，回家后及时清洁面部和鼻腔。';
+            } else if (temp > 30) {
+                healthAdvice = '高温天气，注意防暑降温，多喝水，避免长时间在阳光下暴晒。';
+            } else if (temp < 10) {
+                healthAdvice = '气温较低，注意保暖，特别是老人和儿童，预防感冒和呼吸道疾病。';
+            } else if (humidity < 30) {
+                healthAdvice = '空气干燥，注意多喝水，使用加湿器，预防皮肤干燥和呼吸道不适。';
+            } else {
+                healthAdvice = '天气舒适，是养生的好时机，建议多进行户外活动，保持良好的作息习惯。';
+            }
+            
+            advice.push({
+                type: '健康建议',
+                icon: '💊',
+                text: healthAdvice
+            });
+            
+            return advice;
         };
         
         const clearError = () => {
@@ -281,6 +390,7 @@ const app = createApp({
             errorMessage,
             weatherData,
             forecastData,
+            lifeAdvice,
             showWeather,
             weatherIcon,
             getForecastIcon,

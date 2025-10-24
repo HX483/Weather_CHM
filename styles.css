@@ -172,19 +172,20 @@ body {
 }
 
 .weather-details {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    display: flex;
+    flex-wrap: nowrap;
     gap: 20px;
-    justify-items: center;
+    justify-content: center;
     width: 100%;
 }
 
 .detail-item {
     background: #f8f9fa;
-    padding: 15px;
+    padding: 15px 20px;
     border-radius: 10px;
     text-align: center;
     transition: transform 0.3s ease;
+    white-space: nowrap;
 }
 
 .detail-item:hover {
@@ -266,6 +267,8 @@ body {
     display: flex;
     gap: 0.8rem;
     margin-bottom: 0.5rem;
+    flex-wrap: nowrap;
+    align-items: center;
 }
 
 .temp-min {
@@ -282,6 +285,67 @@ body {
     color: rgba(255, 255, 255, 0.8);
     font-size: 0.85rem;
     text-align: center;
+}
+
+/* 生活建议样式 */
+.advice-section {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+}
+
+.advice-title {
+    color: white;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.advice-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.advice-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.advice-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.advice-icon {
+    font-size: 2rem;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.advice-content {
+    flex: 1;
+    text-align: left;
+}
+
+.advice-type {
+    color: white;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.advice-text {
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.4;
 }
 
 /* 加载状态样式 */
